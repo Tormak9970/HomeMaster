@@ -2,7 +2,7 @@
 
 A plugin for customizing the home page on the Steam Deck.
 
-![Main View](./assets/thumbnail.png)
+<!-- ![Main View](./assets/thumbnail.png) -->
 
 
 # Overview
