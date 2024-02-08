@@ -20,7 +20,6 @@ class Plugin:
   user_id: str = None
   users_dict: dict[str, dict] = None
 
-
   settings: SettingsManager
 
   async def logMessage(self, message, level):
@@ -41,22 +40,8 @@ class Plugin:
     while Plugin.users_dict is None:
       await asyncio.sleep(0.1)
       
-    # log(f"Got users_dict {Plugin.settings_dict}")
+    log(f"Got users_dict {Plugin.users_dict}")
     return Plugin.users_dict
-  
-  async def remove_legacy_settings(self):
-    # ? If there are any legacy settings that need to be removed, do so here
-    
-    # log("Legacy settings removal complete.")
-    pass
-
-  async def migrate_legacy_settings(self):
-    # ? If there are any legacy settings that need to be migrated, do so here
-
-    # await Plugin.remove_legacy_settings(self)
-
-    # log("Legacy settings migration complete.")
-    pass
   
   async def set_active_user_id(self, user_id: str) -> bool:
     log(f"active user id: {user_id}")
@@ -69,47 +54,31 @@ class Plugin:
       log(f"User {user_id} had no settings.")
 
       Plugin.users_dict[user_id] = {
-        "steamMenu": {},
-        "qamMenu": {}
+        "selectedCollectionId": {}
       }
       await Plugin.set_setting(self, "usersDict", Plugin.users_dict)
 
-    return "tabs" in Plugin.settings.settings.keys()
+    return True
   
-  async def get_steam_menu(self) -> dict[str, dict] | None:
+  async def get_selected_collection_id(self) -> str | None:
     """
-    Waits until the user_dict is loaded, then returns the steamMenu settings
+    Waits until the user_dict is loaded, then returns the selectedCollectionId settings
 
-    :return: The steamMenu settings
+    :return: The user's selectedCollectionId
     """
     while Plugin.users_dict is None:
       await asyncio.sleep(0.1)
     
-    steamMenu = Plugin.users_dict[Plugin.user_id]["steamMenu"]
-    log(f"Got steamMenu settings {steamMenu}")
-    return steamMenu or {}
-  
-  async def get_qam_menu(self) -> dict[str, dict] | None:
-    """
-    Waits until the user_dict is loaded, then returns the qamMenu settings
-
-    :return: The qamMenu settings
-    """
-    while Plugin.users_dict is None:
-      await asyncio.sleep(0.1)
-    
-    qamMenu = Plugin.users_dict[Plugin.user_id]["qamMenu"]
-    log(f"Got qamMenu settings {qamMenu}")
-    return qamMenu or {}
+    selectedCollectionId = Plugin.users_dict[Plugin.user_id]["selectedCollectionId"]
+    log(f"Got selectedCollectionId {selectedCollectionId}")
+    return selectedCollectionId or {}
 
   # Plugin settings setters
-  async def set_steam_menu(self, steamMenu: dict[str, dict]):
-    Plugin.users_dict[Plugin.user_id]["steamMenu"] = steamMenu
+  async def set_selected_collection_id(self, collectionId: str):
+    Plugin.users_dict[Plugin.user_id]["selectedCollectionId"] = collectionId
     await Plugin.set_setting(self, "usersDict", Plugin.users_dict)
-  
-  async def set_qam_menu(self, qamMenu: dict[str, dict]):
-    Plugin.users_dict[Plugin.user_id]["qamMenu"] = qamMenu
-    await Plugin.set_setting(self, "usersDict", Plugin.users_dict)
+
+
 
   async def read(self) -> None:
     """
@@ -162,11 +131,11 @@ class Plugin:
     Plugin.settings = SettingsManager(name="settings", settings_directory=os.environ["DECKY_PLUGIN_SETTINGS_DIR"])
     await Plugin.read(self)
 
-    log("Initializing Menu Master.")
+    log("Initializing Home Master.")
 
   # Function called first during the unload process, utilize this to handle your plugin being removed
   async def _unload(self):
-    decky_plugin.logger.info("Unloading Menu Master.")
+    decky_plugin.logger.info("Unloading Home Master.")
 
   # Migrations that should be performed before entering `_main()`.
   async def _migration(self):

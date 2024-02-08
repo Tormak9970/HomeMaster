@@ -13,9 +13,10 @@ Home Master allows you to customize the steam homepage.
 # Features
 
 Features Include:<br/>
- - Create custom menu options
- - Hiding default and custom menu options
- - Reordering default and custom menu options
+ - Customize the collection shown on the home page
+ - (planned) customize the home page tabs below the carousel
+ - (planned) context menu to change the selected collection
+ - (planned) context menu to edit the home page tabs
 
 
 # Using the plugin

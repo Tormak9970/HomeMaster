@@ -1,5 +1,6 @@
 import { IReactionDisposer, reaction } from "mobx";
 import { LogController } from "../lib/controllers/LogController";
+import { PythonInterop } from "../lib/controllers/PythonInterop";
 
 
 /**
@@ -19,6 +20,8 @@ export class HomeMasterManager {
 
   private collectionReactions: { [collectionId: string]: IReactionDisposer; } = {};
   private collectionRemoveReaction: IReactionDisposer | undefined;
+
+  private selectedCollectionId: string | undefined;
 
   /**
    * Creates a new HomeMasterManager.
@@ -87,6 +90,41 @@ export class HomeMasterManager {
     // }
   }
 
+  /**
+   * Loads the user's settings from the backend.
+   */
+  loadSettings = async () => {
+    this.initReactions();
+    const selectedCollectionId = await PythonInterop.getSelectedCollectionId();
+
+    if (selectedCollectionId instanceof Error) {
+      LogController.log("Couldn't load settings");
+      LogController.error(selectedCollectionId.message);
+      return;
+    }
+
+    this.selectedCollectionId = selectedCollectionId;
+
+    this.hasLoaded = true;
+  };
+
+  /**
+   * Gets the user's selected collection id.
+   * @returns The selected collection id, or "" if it isnt set.
+   */
+  getSelectedCollectionId(): string {
+    return this.selectedCollectionId ?? "";
+  }
+
+  /**
+   * Sets the user's selected collection id.
+   * @param collectionId The collection id.
+   */
+  async setSelectedCollectionId(collectionId: string): Promise<void> {
+    await PythonInterop.setSelectedCollectionId(collectionId);
+    this.selectedCollectionId = collectionId;
+  }
+
 
   /**
    * Handles cleaning up all reactions.
@@ -105,20 +143,19 @@ export class HomeMasterManager {
 
     if (this.collectionRemoveReaction) this.collectionRemoveReaction();
   }
+  
+  /**
+   * Dispatches event to update context provider and rerenders library component.
+   */
+  private update() {
+    this.eventBus.dispatchEvent(new Event("stateUpdate"));
+    this.rerenderHomePage();
+  }
 
   /**
-   * Loads the user's settings from the backend.
+   * Method that will be used to force the home page to rerender. Assigned later in the home page patch.
    */
-  loadSettings = async () => {
-    this.initReactions();
-    const settings = {}; //await PythonInterop.getSettings();
+  private rerenderHomePage() {
 
-    if (settings instanceof Error) {
-      LogController.log("Couldn't load tab settings");
-      LogController.error(settings.message);
-      return;
-    }
-
-    this.hasLoaded = true;
-  };
+  }
 }

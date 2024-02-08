@@ -72,6 +72,35 @@ export class PythonInterop {
   }
 
   /**
+   * Gets the user's selected collection id.
+   * @returns A promise resolving to the user's selected collection id.
+   */
+  static async getSelectedCollectionId(): Promise<string | Error> {
+    let result = await PythonInterop.serverAPI.callPluginMethod<{}, string>("get_selected_collection_id", {});
+
+    if (result.success) {
+      return result.result;
+    } else {
+      return new Error(result.result);
+    }
+  }
+
+  /**
+   * Sets the user's selected collection id.
+   * @param collectionId The collection id.
+   * @returns A promise resolving to whether or not the selected collection id was successfully set.
+   */
+  static async setSelectedCollectionId(collectionId: string): Promise<void | Error> {
+    let result = await PythonInterop.serverAPI.callPluginMethod<{ collectionId: string, }, void>("set_selected_collection_id", { collectionId: collectionId });
+
+    if (result.success) {
+      return result.result;
+    } else {
+      return new Error(result.result);
+    };
+  }
+
+  /**
    * Shows a toast message.
    * @param title The title of the toast.
    * @param message The message of the toast.

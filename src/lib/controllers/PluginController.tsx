@@ -2,7 +2,7 @@ import { ServerAPI } from "decky-frontend-lib";
 import { PythonInterop } from "./PythonInterop";
 import { SteamController } from "./SteamController";
 import { LogController } from "./LogController";
-import { getCurrentUserId } from "../Utils";
+import { HomeMasterManager } from "../../state/HomeMasterManager";
 
 
 /**
@@ -11,7 +11,7 @@ import { getCurrentUserId } from "../Utils";
 export class PluginController {
   // @ts-ignore
   private static server: ServerAPI;
-  // private static homeMasterManager: HomeMasterManager;
+  private static homeMasterManager: HomeMasterManager;
 
   private static steamController: SteamController;
 
@@ -20,10 +20,13 @@ export class PluginController {
   /**
    * Sets the plugin's serverAPI.
    * @param server The serverAPI to use.
+   * @param homeMasterManager The state manager for the plugin.
    */
-  static setup(server: ServerAPI): void {
+  static setup(server: ServerAPI, homeMasterManager: HomeMasterManager): void {
+    LogController.setup("HomeMaster", "8de500");
+
     this.server = server;
-    // this.homeMasterManager = homeMasterManager;
+    this.homeMasterManager = homeMasterManager;
     this.steamController = new SteamController();
   }
 
@@ -32,16 +35,16 @@ export class PluginController {
    * @returns The unregister function for the login hook.
    */
   static initOnLogin(onMount: () => Promise<void>): Unregisterer {
-    return this.steamController.registerForAuthStateChange(async (username) => {
-      LogController.log(`User logged in. [DEBUG] username: ${username}.`);
+    return this.steamController.registerForAuthStateChange(async (_username) => {
+      // LogController.log(`User logged in. [DEBUG] username: ${username}.`);
       if (await this.steamController.waitForServicesToInitialize()) {
         await PluginController.init();
         onMount();
       } else {
         PythonInterop.toast("Error", "Failed to initialize, try restarting.");
       }
-    }, async (username) => {
-      LogController.log(`User logged out. [DEBUG] username: ${username}.`);
+    }, async (_username) => {
+      // LogController.log(`User logged out. [DEBUG] username: ${username}.`);
     }, true, true);
   }
 
@@ -66,8 +69,7 @@ export class PluginController {
    */
   static dismount(): void {
     if (this.onWakeSub) this.onWakeSub.unregister();
-
-    // this.homeMasterManager.disposeReactions();
+    this.homeMasterManager.disposeReactions();
 
     LogController.log("PluginController dismounted.");
   }
