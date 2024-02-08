@@ -21,7 +21,7 @@ export class HomeMasterManager {
   private collectionReactions: { [collectionId: string]: IReactionDisposer; } = {};
   private collectionRemoveReaction: IReactionDisposer | undefined;
 
-  private selectedCollectionId: string | undefined;
+  private carouselCollectionId: string | undefined;
 
   /**
    * Creates a new HomeMasterManager.
@@ -30,6 +30,9 @@ export class HomeMasterManager {
     this.hasLoaded = false;
   }
 
+  get hasSettingsLoaded() {
+    return this.hasLoaded;
+  }
 
   private initReactions(): void {
     // //* subscribe to when visible favorites change
@@ -95,34 +98,34 @@ export class HomeMasterManager {
    */
   loadSettings = async () => {
     this.initReactions();
-    const selectedCollectionId = await PythonInterop.getSelectedCollectionId();
+    const carouselCollectionId = await PythonInterop.getCarouselCollectionId();
 
-    if (selectedCollectionId instanceof Error) {
+    if (carouselCollectionId instanceof Error) {
       LogController.log("Couldn't load settings");
-      LogController.error(selectedCollectionId.message);
+      LogController.error(carouselCollectionId.message);
       return;
     }
 
-    this.selectedCollectionId = selectedCollectionId;
+    this.carouselCollectionId = carouselCollectionId;
 
     this.hasLoaded = true;
   };
 
   /**
-   * Gets the user's selected collection id.
-   * @returns The selected collection id, or "" if it isnt set.
+   * Gets the user's carousel collection id.
+   * @returns The carousel collection id, or "" if it isnt set.
    */
-  getSelectedCollectionId(): string {
-    return this.selectedCollectionId ?? "";
+  getCarouselCollectionId(): string {
+    return this.carouselCollectionId ?? "";
   }
 
   /**
-   * Sets the user's selected collection id.
+   * Sets the user's carousel collection id.
    * @param collectionId The collection id.
    */
-  async setSelectedCollectionId(collectionId: string): Promise<void> {
-    await PythonInterop.setSelectedCollectionId(collectionId);
-    this.selectedCollectionId = collectionId;
+  async setCarouselCollectionId(collectionId: string): Promise<void> {
+    await PythonInterop.setCarouselCollectionId(collectionId);
+    this.carouselCollectionId = collectionId;
   }
 
 

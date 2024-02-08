@@ -60,22 +60,22 @@ class Plugin:
 
     return True
   
-  async def get_selected_collection_id(self) -> str | None:
+  async def get_carousel_collection_id(self) -> str | None:
     """
-    Waits until the user_dict is loaded, then returns the selectedCollectionId settings
+    Waits until the user_dict is loaded, then returns the carouselCollectionId settings
 
-    :return: The user's selectedCollectionId
+    :return: The user's carouselCollectionId
     """
     while Plugin.users_dict is None:
       await asyncio.sleep(0.1)
     
-    selectedCollectionId = Plugin.users_dict[Plugin.user_id]["selectedCollectionId"]
-    log(f"Got selectedCollectionId {selectedCollectionId}")
-    return selectedCollectionId or {}
+    carouselCollectionId = Plugin.users_dict[Plugin.user_id]["carouselCollectionId"]
+    log(f"Got carouselCollectionId {carouselCollectionId}")
+    return carouselCollectionId or {}
 
   # Plugin settings setters
-  async def set_selected_collection_id(self, collectionId: str):
-    Plugin.users_dict[Plugin.user_id]["selectedCollectionId"] = collectionId
+  async def set_carousel_collection_id(self, collectionId: str):
+    Plugin.users_dict[Plugin.user_id]["carouselCollectionId"] = collectionId
     await Plugin.set_setting(self, "usersDict", Plugin.users_dict)
 
 

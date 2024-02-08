@@ -9,7 +9,7 @@ interface ProviderProps {
 }
 
 interface PublicHomeMasterManager {
-  selectedCollectionId: string;
+  carouselCollectionId: string;
 }
 interface PublicHomeMasterContext extends PublicHomeMasterManager {
   homeMasterManager: HomeMasterManager
@@ -17,12 +17,12 @@ interface PublicHomeMasterContext extends PublicHomeMasterManager {
 
 export const HomeMasterContextProvider: FC<ProviderProps> = ({ children, homeMasterManager }) => {
   const [publicState, setPublicState] = useState<PublicHomeMasterManager>({
-    selectedCollectionId: homeMasterManager.getSelectedCollectionId()
+    carouselCollectionId: homeMasterManager.getCarouselCollectionId()
   });
 
   useEffect(() => {
     function onUpdate() {
-      setPublicState({ selectedCollectionId: homeMasterManager.getSelectedCollectionId() });
+      setPublicState({ carouselCollectionId: homeMasterManager.getCarouselCollectionId() });
     }
 
     homeMasterManager.eventBus.addEventListener("stateUpdate", onUpdate);

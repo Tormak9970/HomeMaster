@@ -23,7 +23,6 @@ declare global {
   let collectionStore: CollectionStore;
   let appStore: AppStore;
   let loginStore: LoginStore;
-  let friendStore: FriendStore;
   //* This casing is correct, idk why it doesn't match the others.
   let securitystore: SecurityStore;
   let settingsStore: SettingsStore;
@@ -36,7 +35,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
   PythonInterop.setServer(serverAPI);
 
   const homeMasterManager = new HomeMasterManager();
-  PluginController.setup(serverAPI);
+  PluginController.setup(serverAPI, homeMasterManager);
 
   const loginUnregisterer = PluginController.initOnLogin(async () => {
     await homeMasterManager.loadSettings();

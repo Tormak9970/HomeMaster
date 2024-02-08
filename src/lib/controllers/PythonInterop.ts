@@ -72,11 +72,11 @@ export class PythonInterop {
   }
 
   /**
-   * Gets the user's selected collection id.
-   * @returns A promise resolving to the user's selected collection id.
+   * Gets the user's carousel collection id.
+   * @returns A promise resolving to the user's carousel collection id.
    */
-  static async getSelectedCollectionId(): Promise<string | Error> {
-    let result = await PythonInterop.serverAPI.callPluginMethod<{}, string>("get_selected_collection_id", {});
+  static async getCarouselCollectionId(): Promise<string | Error> {
+    let result = await PythonInterop.serverAPI.callPluginMethod<{}, string>("get_carousel_collection_id", {});
 
     if (result.success) {
       return result.result;
@@ -86,12 +86,12 @@ export class PythonInterop {
   }
 
   /**
-   * Sets the user's selected collection id.
+   * Sets the user's carousel collection id.
    * @param collectionId The collection id.
-   * @returns A promise resolving to whether or not the selected collection id was successfully set.
+   * @returns A promise resolving to whether or not the carousel collection id was successfully set.
    */
-  static async setSelectedCollectionId(collectionId: string): Promise<void | Error> {
-    let result = await PythonInterop.serverAPI.callPluginMethod<{ collectionId: string, }, void>("set_selected_collection_id", { collectionId: collectionId });
+  static async setCarouselCollectionId(collectionId: string): Promise<void | Error> {
+    let result = await PythonInterop.serverAPI.callPluginMethod<{ collectionId: string, }, void>("set_carousel_collection_id", { collectionId: collectionId });
 
     if (result.success) {
       return result.result;
