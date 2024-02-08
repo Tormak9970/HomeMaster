@@ -54,7 +54,7 @@ class Plugin:
       log(f"User {user_id} had no settings.")
 
       Plugin.users_dict[user_id] = {
-        "selectedCollectionId": {}
+        "selectedCollectionId": "NO_CHANGE"
       }
       await Plugin.set_setting(self, "usersDict", Plugin.users_dict)
 

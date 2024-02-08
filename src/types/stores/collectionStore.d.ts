@@ -6,6 +6,7 @@ type CollectionStore = {
   appTypeCollectionMap: Map<AppCollectionType, Collection>,
   allGamesCollection: Collection,
   deckDesktopApps: Collection | null,
+  neptuneGamesCollection: Collection | null,
   userCollections: Collection[],
   localGamesCollection: Collection,
   allAppsCollection: Collection,

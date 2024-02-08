@@ -1,5 +1,13 @@
-import { gamepadDialogClasses, quickAccessControlsClasses } from "decky-frontend-lib";
+import { gamepadDialogClasses } from "decky-frontend-lib";
 import { VFC } from "react";
+
+// .home-master-scope .${quickAccessControlsClasses.PanelSection} {
+//   padding: 0px;
+// }
+// .home-master-scope .${quickAccessControlsClasses.PanelSectionTitle} {
+//   margin-top: 3px;
+//   margin-left: 5px;
+// }
 
 /**
  * All css styling for the Quick Access Menu part of TabMaster.
@@ -17,14 +25,6 @@ export const QamStyles: VFC<{}> = ({}) => {
         flex-direction: column;
         justify-content: flex-start;
         align-content: stretch;
-      }
-
-      .home-master-scope .${quickAccessControlsClasses.PanelSection} {
-        padding: 0px;
-      }
-      .home-master-scope .${quickAccessControlsClasses.PanelSectionTitle} {
-        margin-top: 3px;
-        margin-left: 5px;
       }
 
       .home-master-scope .${gamepadDialogClasses.FieldChildren} {

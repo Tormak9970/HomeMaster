@@ -7,22 +7,41 @@ import { Dropdown, DropdownOption, Focusable, PanelSection } from "decky-fronten
 import { useHomeMasterContext } from "../state/HomeMasterContext";
 
 /**
+ * Filters the userCollections list to remove unwanted entries.
+ * @param userCollections The user's collections.
+ * @returns The filtered list of collections.
+ */
+function filterUserCollections(userCollections: Collection[]): Collection[] {
+  const idsToRemove: string[] = ["favorite", "type-music"];
+  return userCollections.filter((collection) => !idsToRemove.includes(collection.id));
+}
+
+/**
  * The Quick Access Menu content for HomeMaster.
  */
 export const QuickAccessContent: VFC<{}> = ({ }) => {
   const { carouselCollectionId, homeMasterManager } = useHomeMasterContext();
 
-  const collections: Record<string, Collection> = {
-    
+  const COLLECTION_NAME_LUT: Record<string, string> = {
+    "All": "All Games",
+    "Locally Installed Games": "Installed Games"
   }
+
+  const collections: Collection[] = [ collectionStore.allGamesCollection ];
+  collections.push(collectionStore.GetCollection("favorite"));
+
+  if (collectionStore.deckDesktopApps) collections.push(collectionStore.deckDesktopApps);
+  if (collectionStore.neptuneGamesCollection) collections.push(collectionStore.neptuneGamesCollection);
+
+  collections.push(...filterUserCollections(collectionStore.userCollections));
 
   const dropdownOptions: DropdownOption[] = [
     { label: "Recently Played", data: "NO_CHANGE" }
   ];
 
   useEffect(() => {
-    for (const [collectionId, collection] of Object.entries(collections)) {
-      dropdownOptions.push({ label: collection.displayName, data: collectionId });
+    for (const collection of collections) {
+      dropdownOptions.push({ label: COLLECTION_NAME_LUT[collection.displayName] ?? collection.displayName, data: collection.id });
     }
   }, [])
 

@@ -1,16 +1,12 @@
 import {
   afterPatch,
   findInReactTree,
-  Patch,
-  replacePatch,
   RoutePatch,
   ServerAPI,
-  showContextMenu,
   wrapReactType
 } from "decky-frontend-lib";
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement } from "react";
 import { HomeMasterManager } from "../state/HomeMasterManager";
-import { LogController } from "../lib/controllers/LogController";
 
 /**
  * Patches the Steam library to allow the plugin to change the tabs.
@@ -54,7 +50,9 @@ export const patchHome = (serverAPI: ServerAPI, homeMasterManager: HomeMasterMan
 
           // * Set the games to be rendered
           const p = findInReactTree(ret3, (x) => x?.props?.games && x?.props.onItemFocus);
-          p.props.games = collectionStore.GetCollection('favorite').allApps.map((app) => app.appid).slice(0, 20); // ! may need to limit number, not sure
+
+          const collectionId = homeMasterManager.getCarouselCollectionId();
+          if (homeMasterManager.hasSettingsLoaded && collectionId !== "NO_CHANGE") p.props.games = collectionStore.GetCollection(collectionId).allApps.map((app) => app.appid).slice(0, 20); // ! may need to limit number, not sure
           
           afterPatch(p, 'type', (_: Record<string, unknown>[], ret4?: any) => {
             console.log("ret4:", JSON.parse(JSON.stringify(ret3)));

@@ -44,7 +44,6 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   return {
     title: <>HomeMaster</>,
-    // titleView: <QuickAccessTitleView title="HomeMaster" homeMasterManager={homeMasterManager} />,
     content:
       <HomeMasterContextProvider homeMasterManager={homeMasterManager}>
         <QuickAccessContent />
@@ -52,7 +51,6 @@ export default definePlugin((serverAPI: ServerAPI) => {
     icon: <TbLayoutNavbarExpand />,
     onDismount: () => {
       serverAPI.routerHook.removePatch("/", homePatch);
-      serverAPI.routerHook.removeRoute("/tab-master-docs");
 
       loginUnregisterer.unregister();
       PluginController.dismount();
