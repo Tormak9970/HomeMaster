@@ -9,16 +9,11 @@ import { PythonInterop } from "../lib/controllers/PythonInterop";
 export class HomeMasterManager {
   private hasLoaded: boolean;
 
-  private userCollectionIds: string[] = [];
-
   public eventBus = new EventTarget();
 
   private favoriteReaction: IReactionDisposer | undefined;
   private installedReaction: IReactionDisposer | undefined;
-  private hiddenReaction: IReactionDisposer | undefined;
   private nonSteamReaction: IReactionDisposer | undefined;
-
-  private collectionReactions: { [collectionId: string]: IReactionDisposer; } = {};
   private collectionRemoveReaction: IReactionDisposer | undefined;
 
   private carouselCollectionId: string | undefined;
@@ -35,69 +30,58 @@ export class HomeMasterManager {
   }
 
   private initReactions(): void {
-    // //* subscribe to when visible favorites change
-    // this.favoriteReaction = reaction(() => collectionStore.GetCollection('favorite').allApps.length, this.handleNumOfVisibleFavoritesChanged.bind(this));
+    // * subscribe to when visible favorites change
+    this.favoriteReaction = reaction(() => collectionStore.GetCollection('favorite').allApps.length, this.resetCarouselCollectionOnLengthChange('favorite').bind(this));
 
-    // //*subscribe to when installed games change
-    // this.installedReaction = reaction(() => collectionStore.GetCollection('local-install').allApps.length, this.rebuildCustomTabsOnCollectionChange.bind(this));
+    // *subscribe to when installed games change
+    this.installedReaction = reaction(() => collectionStore.GetCollection('local-install').allApps.length, this.resetCarouselCollectionOnLengthChange('local-install').bind(this));
 
-    // //* subscribe to non-steam games if they exist
-    // if (collectionStore.GetCollection('desk-desktop-apps')) {
-    //   this.nonSteamReaction = reaction(() => collectionStore.GetCollection('desk-desktop-apps').allApps.length, this.rebuildCustomTabsOnCollectionChange.bind(this));
-    // }
+    // * subscribe to non-steam games if they exist
+    if (collectionStore.GetCollection('desk-desktop-apps')) {
+      this.nonSteamReaction = reaction(() => collectionStore.GetCollection('desk-desktop-apps').allApps.length, this.resetCarouselCollectionOnLengthChange('desk-desktop-apps').bind(this));
+    }
 
-    // //* subscribe for when collections are deleted
-    // this.collectionRemoveReaction = reaction(() => collectionStore.userCollections.length, this.handleUserCollectionRemove.bind(this));
-    
-    // TODO: listen for changes on all user colletions
-
-    // this.handleUserCollectionRemove(collectionStore.userCollections.length); //* this loads the collection ids for the first time.
+    // * subscribe for when collections are deleted
+    this.collectionRemoveReaction = reaction(() => collectionStore.userCollections.length, this.handleUserCollectionRemove.bind(this));
+  
+    // * this checks if the 
+    this.handleUserCollectionRemove(collectionStore.userCollections.length); 
   }
 
+  
   /**
-   * Handles rebuilding tabs when a collection changes.
+   * Handles the collection size change reaction.
+   * @param collectionId The id of the collection to react to.
    */
-  private async rebuildCustomTabsOnCollectionChange() {
-    if (!this.hasLoaded) return;
+  private resetCarouselCollectionOnLengthChange(collectionId: string): (numApps: number) => void {
+    return (numApps: number) => {
+      if (!this.hasLoaded) return;
+  
+      if (this.carouselCollectionId === collectionId && numApps === 0) {
+        LogController.log(`${collectionId} has a size of zero, setting carousel to NO_CHANGE`);
+        this.setCarouselCollectionId("NO_CHANGE");
+      }
+    }
   }
 
   /**
    * Handles when the user deletes one of their collections.
    * @param newLength The new length of the userCollections.
    */
-  private handleUserCollectionRemove(newLength: number) {
-    // const userCollections = collectionStore.userCollections;
+  private handleUserCollectionRemove(_newLength: number) {
+    const userCollections = collectionStore.userCollections;
+    const collectionIds = userCollections.map((collection) => collection.id);
 
-    // if (newLength < this.userCollectionIds.length && this.hasLoaded) {
-    //   let validateTabs = false;
-    //   const collectionsInUse = Object.keys(this.collectionReactions);
-    //   const currentUserCollectionIds = userCollections.map((collection) => collection.id);
-
-    //   this.userCollectionIds = this.userCollectionIds.filter((id) => {
-    //     const isIncluded = currentUserCollectionIds.includes(id);
-
-    //     if (!isIncluded && collectionsInUse.includes(id)) {
-    //       validateTabs = true;
-    //       this.collectionReactions[id]();
-    //       delete this.collectionReactions[id];
-    //     }
-
-    //     return isIncluded;
-    //   });
-
-    //   if (validateTabs) TabErrorController.validateTabs(Array.from(this.tabsMap.keys()), this);
-    // } else {
-    //   for (const userCollection of userCollections) {
-    //     if (!this.userCollectionIds.includes(userCollection.id)) this.userCollectionIds.push(userCollection.id);
-    //   }
-    // }
+    if (this.hasLoaded && collectionIds.includes(this.carouselCollectionId!)) {
+      LogController.log(`${this.carouselCollectionId} was deleted, setting carousel to NO_CHANGE`);
+      this.setCarouselCollectionId("NO_CHANGE");
+    }
   }
 
   /**
    * Loads the user's settings from the backend.
    */
   loadSettings = async () => {
-    this.initReactions();
     const carouselCollectionId = await PythonInterop.getCarouselCollectionId();
 
     if (carouselCollectionId instanceof Error) {
@@ -109,6 +93,8 @@ export class HomeMasterManager {
     this.carouselCollectionId = carouselCollectionId;
 
     this.hasLoaded = true;
+    
+    this.initReactions();
   };
 
   /**
@@ -126,25 +112,7 @@ export class HomeMasterManager {
   async setCarouselCollectionId(collectionId: string): Promise<void> {
     await PythonInterop.setCarouselCollectionId(collectionId);
     this.carouselCollectionId = collectionId;
-  }
-
-
-  /**
-   * Handles cleaning up all reactions.
-   */
-  disposeReactions(): void {
-    if (this.favoriteReaction) this.favoriteReaction();
-    if (this.installedReaction) this.installedReaction();
-    if (this.hiddenReaction) this.hiddenReaction();
-    if (this.nonSteamReaction) this.nonSteamReaction();
-
-    if (this.collectionReactions) {
-      for (const reaction of Object.values(this.collectionReactions)) {
-        reaction();
-      }
-    }
-
-    if (this.collectionRemoveReaction) this.collectionRemoveReaction();
+    this.update();
   }
   
   /**
@@ -158,7 +126,24 @@ export class HomeMasterManager {
   /**
    * Method that will be used to force the home page to rerender. Assigned later in the home page patch.
    */
-  private rerenderHomePage() {
+  private rerenderHomePage() { }
+  
+  /**
+   * Assigns the callback that will be used to rerender the home page.
+   * @param handler The callback that will cause the home page to rerender.
+   */
+  registerRerenderHomePageHandler(handler: () => void): void {
+    this.rerenderHomePage = handler;
+  }
 
+
+  /**
+   * Handles cleaning up all reactions.
+   */
+  disposeReactions(): void {
+    if (this.favoriteReaction) this.favoriteReaction();
+    if (this.installedReaction) this.installedReaction();
+    if (this.nonSteamReaction) this.nonSteamReaction();
+    if (this.collectionRemoveReaction) this.collectionRemoveReaction();
   }
 }
