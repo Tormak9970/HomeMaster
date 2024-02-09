@@ -27,7 +27,6 @@ export const patchHome = (serverAPI: ServerAPI, homeMasterManager: HomeMasterMan
           return ret2;
         }
 
-        let cache3: any = null;
         const recents = findInReactTree(ret2, (x) => x?.props && ('autoFocus' in x.props) && ('showBackground' in x.props));
         console.log("recents:", JSON.parse(JSON.stringify(recents)));
 
@@ -37,29 +36,19 @@ export const patchHome = (serverAPI: ServerAPI, homeMasterManager: HomeMasterMan
 
           cache2 = ret2;
 
-          wrapReactType(ret3);
-
-          if (cache3) {
-            ret3 = cache3;
-            return ret3;
-          }
-
-          // * Set the label
-          ret3.props.children[1].props.children[0].props.children[0].props.children = "Favorites";
-
-
-          // * Set the games to be rendered
           const p = findInReactTree(ret3, (x) => x?.props?.games && x?.props.onItemFocus);
 
           const collectionId = homeMasterManager.getCarouselCollectionId();
-          if (homeMasterManager.hasSettingsLoaded && collectionId !== "NO_CHANGE") p.props.games = collectionStore.GetCollection(collectionId).allApps.map((app) => app.appid).slice(0, 20); // ! may need to limit number, not sure
-          
-          afterPatch(p, 'type', (_: Record<string, unknown>[], ret4?: any) => {
-            console.log("ret4:", JSON.parse(JSON.stringify(ret3)));
-          
-            cache3 = ret3;
-            return ret4;
-          });
+          if (homeMasterManager.hasSettingsLoaded && collectionId !== "NO_CHANGE") {
+            const collection = collectionStore.GetCollection(collectionId);
+
+            // * Set the label
+            ret3.props.children[1].props.children[0].props.children[0].props.children = collection.displayName;
+
+            // * Set the games to be rendered
+            p.props.games = collection.allApps.map((app) => app.appid).slice(0, 20); // ! need to limit number to 20
+          }
+
           return ret3;
         });
         return ret2;

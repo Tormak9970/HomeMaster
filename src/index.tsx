@@ -4,8 +4,6 @@ import {
   ServerAPI,
 } from "decky-frontend-lib";
 
-import { TbLayoutNavbarExpand } from "react-icons/tb";
-
 import { PluginController } from "./lib/controllers/PluginController";
 import { PythonInterop } from "./lib/controllers/PythonInterop";
 
@@ -16,6 +14,7 @@ import { patchHome } from "./patches/HomePatch";
 
 import { QuickAccessContent } from "./components/QuickAccessContent";
 import { Fragment } from 'react';
+import { FaHouse } from "react-icons/fa6";
 
 declare global {
   let DeckyPluginLoader: { pluginReloadQueue: { name: string; version?: string; }[]; };
@@ -48,7 +47,8 @@ export default definePlugin((serverAPI: ServerAPI) => {
       <HomeMasterContextProvider homeMasterManager={homeMasterManager}>
         <QuickAccessContent />
       </HomeMasterContextProvider>,
-    icon: <TbLayoutNavbarExpand />,
+    icon: <FaHouse />,
+    alwaysRender: true,
     onDismount: () => {
       serverAPI.routerHook.removePatch("/", homePatch);
 

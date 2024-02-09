@@ -3,8 +3,13 @@ import { LogController } from "../lib/controllers/LogController";
 
 import { FaCircleExclamation } from "react-icons/fa6";
 import { QamStyles } from "./styles/QamStyles";
-import { Dropdown, DropdownOption, Focusable, PanelSection } from "decky-frontend-lib";
+import { DropdownOption, Focusable, PanelSection, SingleDropdownOption } from "decky-frontend-lib";
 import { useHomeMasterContext } from "../state/HomeMasterContext";
+import { ListSearchDropdown } from "./modals/ListSearchModal";
+
+import { FaUser, FaSteam } from "react-icons/fa6";
+import { IoGrid } from "react-icons/io5";
+import { IconType } from "react-icons/lib";
 
 /**
  * Filters the userCollections list to remove unwanted entries.
@@ -14,6 +19,21 @@ import { useHomeMasterContext } from "../state/HomeMasterContext";
 function filterUserCollections(userCollections: Collection[]): Collection[] {
   const idsToRemove: string[] = ["favorite", "type-music"];
   return userCollections.filter((collection) => !idsToRemove.includes(collection.id));
+}
+
+
+/**
+ * Gets an entry icon for a collection based on if its user made.
+ * @param entry The collection entry.
+ * @returns The icon for the collection.
+ */
+function getCollectionIcon(entry: any): IconType {
+  const collection = collectionStore.userCollections.find((collection: Collection) => collection.id === entry.data);
+  if (collection?.bIsEditable) {
+    return FaUser;
+  } else {
+    return FaSteam;
+  }
 }
 
 /**
@@ -35,7 +55,7 @@ export const QuickAccessContent: VFC<{}> = ({ }) => {
 
   collections.push(...filterUserCollections(collectionStore.userCollections));
 
-  const dropdownOptions: DropdownOption[] = [
+  const dropdownOptions: SingleDropdownOption[] = [
     { label: "Recently Played", data: "NO_CHANGE" }
   ];
 
@@ -43,7 +63,7 @@ export const QuickAccessContent: VFC<{}> = ({ }) => {
     for (const collection of collections) {
       dropdownOptions.push({ label: COLLECTION_NAME_LUT[collection.displayName] ?? collection.displayName, data: collection.id });
     }
-  }, [])
+  }, []);
 
   async function onChange(selectedOption: DropdownOption): Promise<void> {
     const collectionId = selectedOption.data as string;
@@ -71,13 +91,20 @@ export const QuickAccessContent: VFC<{}> = ({ }) => {
       </div>}
       <QamStyles />
       <Focusable >
-        <div style={{ margin: "5px", marginTop: "0px" }}>
+        <PanelSection>
           Here you can customize your Steam home page.
-        </div>
+        </PanelSection>
         <PanelSection title="Carousel Collection">
-          <div className="seperator"></div>
           {homeMasterManager.hasSettingsLoaded ? (
-            <Dropdown rgOptions={dropdownOptions} selectedOption={carouselCollectionId} onChange={onChange} />
+            // <Dropdown rgOptions={dropdownOptions} selectedOption={carouselCollectionId} onChange={onChange} />
+            <ListSearchDropdown
+              entryLabel="Collections"
+              rgOptions={dropdownOptions}
+              selectedOption={carouselCollectionId}
+              onChange={onChange}
+              TriggerIcon={IoGrid}
+              determineEntryIcon={getCollectionIcon}
+            />
           ) : (
             <div style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", padding: "5px" }}>
               Loading...
