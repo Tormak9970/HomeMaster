@@ -36,8 +36,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
   const homeMasterManager = new HomeMasterManager();
   PluginController.setup(serverAPI, homeMasterManager);
 
-  const loginUnregisterer = PluginController.initOnLogin(async () => {
-    await homeMasterManager.loadSettings();
+  const userChangeUnregisterer = PluginController.initOnUserChange(async () => {
     homePatch = patchHome(serverAPI, homeMasterManager);
   });
 
@@ -52,7 +51,8 @@ export default definePlugin((serverAPI: ServerAPI) => {
     onDismount: () => {
       serverAPI.routerHook.removePatch("/", homePatch);
 
-      loginUnregisterer.unregister();
+      // loginUnregisterer.unregister();
+      userChangeUnregisterer.unregister();
       PluginController.dismount();
     },
   };

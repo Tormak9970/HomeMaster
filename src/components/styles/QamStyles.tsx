@@ -1,16 +1,8 @@
-import { gamepadDialogClasses } from "decky-frontend-lib";
+import { gamepadDialogClasses, quickAccessControlsClasses } from "decky-frontend-lib";
 import { VFC } from "react";
 
-// .home-master-scope .${quickAccessControlsClasses.PanelSection} {
-//   padding: 0px;
-// }
-// .home-master-scope .${quickAccessControlsClasses.PanelSectionTitle} {
-//   margin-top: 3px;
-//   margin-left: 5px;
-// }
-
 /**
- * All css styling for the Quick Access Menu part of TabMaster.
+ * All css styling for the Quick Access Menu part of HomeMaster.
  */
 export const QamStyles: VFC<{}> = ({}) => {
   return (
@@ -27,8 +19,20 @@ export const QamStyles: VFC<{}> = ({}) => {
         align-content: stretch;
       }
 
-      .home-master-scope .${gamepadDialogClasses.FieldChildren} {
+      .home-master-scope .${quickAccessControlsClasses.PanelSection} {
+        padding: 0px;
+        margin: 0px;
+        width: 100%;
+      }
+
+      .home-master-scope .${quickAccessControlsClasses.PanelSectionTitle} {
+        margin-top: 3px;
+        margin-left: 16px;
+      }
+
+      .home-master-scope .${gamepadDialogClasses.FieldDescription} {
         margin: 0px 16px;
+        margin-top: 5px;
       }
       .home-master-scope .${gamepadDialogClasses.FieldLabel} {
         margin-left: 16px;

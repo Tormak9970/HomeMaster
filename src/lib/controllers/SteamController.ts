@@ -50,6 +50,17 @@ export class SteamController {
   }
 
   /**
+   * Registers a hook for when the current user changes.
+   * @param onChange Function to run on user change.
+   * @returns A function to unregister the hook.
+   */
+  registerForCurrentUserChanges(onChange: ((userInfo?: UserInfo) => Promise<void>)): Unregisterer {
+    return SteamClient.User.RegisterForCurrentUserChanges((userInfo: UserInfo) => {
+      onChange(userInfo);
+    });
+  }
+
+  /**
    * Waits until the services are initialized.
    * @returns A promise resolving to true if services were initialized on any attempt, or false if all attemps failed.
    */

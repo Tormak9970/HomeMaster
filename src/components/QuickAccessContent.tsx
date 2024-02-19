@@ -1,9 +1,9 @@
-import { VFC, useEffect } from "react";
+import { VFC, useEffect, Fragment } from "react";
 import { LogController } from "../lib/controllers/LogController";
 
 import { FaCircleExclamation } from "react-icons/fa6";
 import { QamStyles } from "./styles/QamStyles";
-import { DropdownOption, Focusable, PanelSection, SingleDropdownOption } from "decky-frontend-lib";
+import { Dropdown, DropdownOption, Field, Focusable, PanelSection, SingleDropdownOption } from "decky-frontend-lib";
 import { useHomeMasterContext } from "../state/HomeMasterContext";
 import { ListSearchDropdown } from "./modals/ListSearchModal";
 
@@ -40,6 +40,7 @@ function getCollectionIcon(entry: any): IconType {
  * The Quick Access Menu content for HomeMaster.
  */
 export const QuickAccessContent: VFC<{}> = ({ }) => {
+  const sortBy = "recent";
   const { carouselCollectionId, homeMasterManager } = useHomeMasterContext();
 
   const COLLECTION_NAME_LUT: Record<string, string> = {
@@ -55,19 +56,28 @@ export const QuickAccessContent: VFC<{}> = ({ }) => {
 
   collections.push(...filterUserCollections(collectionStore.userCollections));
 
-  const dropdownOptions: SingleDropdownOption[] = [
+  const carouselCollectionOptions: SingleDropdownOption[] = [
     { label: "Recently Played", data: "NO_CHANGE" }
   ];
 
+  const sortByOptions: DropdownOption[] = [
+    { label: "Recently Played", data: "recent" },
+    { label: "None", data: "none" }
+  ]
+
   useEffect(() => {
     for (const collection of collections) {
-      dropdownOptions.push({ label: COLLECTION_NAME_LUT[collection.displayName] ?? collection.displayName, data: collection.id });
+      carouselCollectionOptions.push({ label: COLLECTION_NAME_LUT[collection.displayName] ?? collection.displayName, data: collection.id });
     }
   }, []);
 
-  async function onChange(selectedOption: DropdownOption): Promise<void> {
+  async function onCarouselCollectionChange(selectedOption: DropdownOption): Promise<void> {
     const collectionId = selectedOption.data as string;
     await homeMasterManager.setCarouselCollectionId(collectionId);
+  }
+
+  async function onSortByChange(selectedOption: DropdownOption): Promise<void> {
+
   }
 
   return (
@@ -91,20 +101,30 @@ export const QuickAccessContent: VFC<{}> = ({ }) => {
       </div>}
       <QamStyles />
       <Focusable >
-        <PanelSection>
-          Here you can customize your Steam home page.
-        </PanelSection>
-        <PanelSection title="Carousel Collection">
+        <PanelSection title="Settings">
           {homeMasterManager.hasSettingsLoaded ? (
-            // <Dropdown rgOptions={dropdownOptions} selectedOption={carouselCollectionId} onChange={onChange} />
-            <ListSearchDropdown
-              entryLabel="Collections"
-              rgOptions={dropdownOptions}
-              selectedOption={carouselCollectionId}
-              onChange={onChange}
-              TriggerIcon={IoGrid}
-              determineEntryIcon={getCollectionIcon}
-            />
+            <>
+              {/* <Dropdown rgOptions={dropdownOptions} selectedOption={carouselCollectionId} onChange={onChange} /> */}
+              <Field
+                label="Carousel Collection"
+                description={
+                  <ListSearchDropdown
+                    entryLabel="Collections"
+                    rgOptions={carouselCollectionOptions}
+                    selectedOption={carouselCollectionId}
+                    onChange={onCarouselCollectionChange}
+                    TriggerIcon={IoGrid}
+                    determineEntryIcon={getCollectionIcon}
+                  />
+                }
+              />
+              <Field
+                label="Sort By"
+                description={
+                  <Dropdown rgOptions={sortByOptions} selectedOption={sortBy} onChange={onSortByChange} />
+                }
+              />
+            </>
           ) : (
             <div style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", padding: "5px" }}>
               Loading...

@@ -3,7 +3,6 @@ import { PythonInterop } from "./PythonInterop";
 import { SteamController } from "./SteamController";
 import { LogController } from "./LogController";
 import { HomeMasterManager } from "../../state/HomeMasterManager";
-import { getCurrentUserId } from "../Utils";
 
 /**
  * Main controller class for the plugin.
@@ -14,6 +13,8 @@ export class PluginController {
   private static homeMasterManager: HomeMasterManager;
 
   private static steamController: SteamController;
+
+  private static hasInitialized = false;
 
   private static onWakeSub: Unregisterer;
 
@@ -31,21 +32,24 @@ export class PluginController {
   }
 
   /**
-   * Sets the plugin to initialize once the user logs in.
-   * @returns The unregister function for the login hook.
+   * Sets the plugin to initialize once the user changes in.
+   * @returns The unregister function for the user change hook.
    */
-  static initOnLogin(onMount: () => Promise<void>): Unregisterer {
-    return this.steamController.registerForAuthStateChange(async (_username) => {
-      // LogController.log(`User logged in. [DEBUG] username: ${username}.`);
+  static initOnUserChange(onMount: () => Promise<void>): Unregisterer {
+    return this.steamController.registerForCurrentUserChanges(async (userInfo) => {
       if (await this.steamController.waitForServicesToInitialize()) {
-        await PluginController.init();
-        onMount();
+        if (!PluginController.hasInitialized) {
+          await PythonInterop.setActiveSteamId(userInfo!.strSteamID);
+          await this.homeMasterManager.loadSettings();
+          await PluginController.init();
+          onMount();
+        } else {
+          await this.onUserChange(userInfo!.strSteamID);
+        }
       } else {
         PythonInterop.toast("Error", "Failed to initialize, try restarting.");
       }
-    }, async (_username) => {
-      // LogController.log(`User logged out. [DEBUG] username: ${username}.`);
-    }, true, true);
+    });
   }
 
   /**
@@ -54,9 +58,21 @@ export class PluginController {
   static async init(): Promise<void> {
     LogController.log("PluginController initialized.");
 
-    await PythonInterop.setActiveSteamId(getCurrentUserId());
-
     this.onWakeSub = this.steamController.registerForOnResumeFromSuspend(this.onWakeFromSleep.bind(this));
+    PluginController.hasInitialized = true;
+  }
+
+  /**
+   * Gets the carouselCollectionId when the current user changes.
+   * @param userId The id of the user.
+   */
+  static async onUserChange(userId: string): Promise<void> {
+    await PythonInterop.setActiveSteamId(userId);
+    const carouselCollectionId = await PythonInterop.getCarouselCollectionId();
+
+    if (!(carouselCollectionId instanceof Error)) {
+      this.homeMasterManager.setCarouselCollectionId(carouselCollectionId);
+    }
   }
 
   /**
